@@ -415,6 +415,7 @@ mod tests {
         );
         assert_eq!(parse("1/2 kg"), Some("one half kilograms".to_string()));
         assert_eq!(parse("1/2"), None);
+        assert_eq!(parse("1/２ kg"), None);
     }
 
     #[test]

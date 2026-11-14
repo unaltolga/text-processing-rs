@@ -65,7 +65,9 @@ fn parse_simple(input: &str, mixed: bool) -> Option<String> {
 /// leaving just the digits.
 fn strip_ordinal_suffix(denom: &str) -> &str {
     for suffix in ["st", "nd", "rd", "th"] {
-        if denom.len() > suffix.len() {
+        // A non-ASCII denominator ("２") has no character boundary two bytes from
+        // the end; splitting there would panic.
+        if denom.len() > suffix.len() && denom.is_char_boundary(denom.len() - suffix.len()) {
             let (head, tail) = denom.split_at(denom.len() - suffix.len());
             if tail.eq_ignore_ascii_case(suffix) && head.bytes().all(|b| b.is_ascii_digit()) {
                 return head;
@@ -115,6 +117,14 @@ mod tests {
         assert_eq!(parse("1/4th"), Some("one quarter".to_string()));
         assert_eq!(parse("2/4TH"), Some("two quarters".to_string()));
         assert_eq!(parse("1/3RD"), Some("one third".to_string()));
+    }
+
+    #[test]
+    fn test_non_ascii_denominator() {
+        // Full-width digits are not read, and must not panic.
+        assert_eq!(parse("1/２"), None);
+        assert_eq!(parse("2 1/２"), None);
+        assert_eq!(parse("1/２th"), None);
     }
 
     #[test]

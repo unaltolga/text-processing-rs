@@ -139,6 +139,15 @@ fn test_tn_measure() {
 }
 
 #[test]
+fn test_non_ascii_fraction_denominator_unchanged() {
+    // A full-width digit after the slash used to panic in the fraction tagger.
+    for input in ["1/２", "1/２ kg", "It weighs 1/２ kg."] {
+        assert_eq!(tn_normalize(input), input);
+        assert_eq!(tn_normalize_sentence(input), input);
+    }
+}
+
+#[test]
 fn test_tn_electronic() {
     let results = common::run_test_file(Path::new("tests/data/en/tn_electronic.txt"), tn_normalize);
     println!(
